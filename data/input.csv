@@ -1,0 +1,28 @@
+scenario,parameter,description,value,distribution,low,high,reference,notes
+human_0,well_dead,background mortality rate,0.009,NA,,,"https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/vitalstatisticspopulationandhealthreferencetables#:~:text=Main%20points%20from%20latest%20release&text=There%20were%20616%2C014%20deaths%20registered,1.5%25%20from%20607%2C172%20in%202017.&text=There%20were%20279%2C311%20marriages%20of,1.4%25%20from%20275%2C395%20in%202016.","crude death rate per 1000 = 9.0 for 2018 for England, although this includes infant mortality"
+human_0,birth_well,"background rate of entering the cohort (for example, if the cohort of interest was the total population this would be equivalent to the birth rate)",0.0112,NA,,,"https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/vitalstatisticspopulationandhealthreferencetables#:~:text=Main%20points%20from%20latest%20release&text=There%20were%20616%2C014%20deaths%20registered,1.5%25%20from%20607%2C172%20in%202017.&text=There%20were%20279%2C311%20marriages%20of,1.4%25%20from%20275%2C395%20in%202016.",crude live birth rate per 1000 = 11.2 for 2018 for England
+human_1,well_r,probability of  getting resistance infections in a year,0.000022496,beta_count,2.2496,100000,see mannual,
+human_1,well_s,probability of getting susceptible infections ,0.000053504,beta_count,5.3504,100000,see mannual,
+human_0,r_dead,mortality rate of resistant cases,0.1691,beta_conf,0.007346939,,thesis,This is only for in-hospital mortality (& rough calculation of SE)
+human_0,s_dead,mortality rate of susceptible cases,0.1376,beta_conf,0.003265306,,thesis,This is only for in-hospital mortality (& rough calculation of SE)
+human_0,s_cost,healthcare system cost of susceptible infections,1283.66,lognormal,33.54081633,,see mannual,rough calculation for SE 
+human_0,r_cost,healthcare system cost of resistant infections,1601.98,lognormal,90.03061224,,see mannual,rough calculation for SE 
+human_0,hrqol_death,health-related quality of life loss associated with an excess death,-10.94,NA,,,https://github.com/LSHTM-CHIL/COVID19_QALY_App,
+human_0,hrqol_ill,health-related quality of life loss associated with illness,0,NA,,,not including difference for now,
+animal_0,well_dead,on-farm mortality rate,0.033041789,normal,0.017444571,,see mannual,"for Italy and cattle but using as proxy, did wrong calculation of SD as just used difference between upper cost and this / 1.96 to give rough proxy"
+animal_0,birth_well,background birth rate of livestock,0.49,NA,,,,
+animal_1,well_r,probability of  getting resistance infections in a year,0.192576,beta_conf,0.094656,0.2652,see mannual,
+animal_1,well_s,probability of getting susceptible infections ,0.043424,beta_conf,0.021344,0.0598,see mannual,
+animal_0,c_animal,general cost per animal kept,0,NA,,,"have not researched, perhaps included in income estimates taken?",
+animal_0,i_animal,income per animal sold,204,normal,277,,see mannual,
+animal_0,s_dead,"proportion with susceptible infection that die (unsold, i.e. fallen stock)",0.25,NA,,,https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5864045/,based on 1-0.75 curative efficacy
+animal_0,r_dead_impact,"difference with resistant infection that die (unsold, i.e. fallen stock) ",0.25,uniform,0,0.5,assumption,normally this would be a directly entered proportion but as having to guesstimate have added in difference comparative to susceptible
+animal_0,s_cost,cost of treating susceptible infection,56.77,lognormal,40.1930356,,,
+animal_0,r_cost_impact,"difference with resistant infection that die (unsold, i.e. fallen stock) ",0.25,uniform,0,0.5,assumption,normally this would be a directly entered cost but as having to guesstimate have added in difference comparative to susceptible
+animal_0,well_sold,sale of meat ,0.37,NA,,,,
+intervention,int_cost_per,hypothetical intervention cost,10,NA,,,,
+intervention,u_RH,reduction in resistance in humans from reduction in antibiotic usage in animals,0.0934,beta,0.022229592,,see mannual,haven't used distribution info in app since this is currently a manual input parameter
+intervention,u_RA,reduction in resistance in animals from reduction in antibiotic usage in animals,0.24,beta,0.038265306,,see mannual,haven't used distribution info in app since this is currently a manual input parameter
+intervention,n_farms,number of farms in the population of interest,132370,NA,,,https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/848641/AUK_2018_09jul19a.pdf,number of holdings for 2017
+intervention,n_population,number of people in human population,15067949,NA,,,mid ,"MYE1: Population estimates: Summary for the UK, mid-2018,for England total - sum(age groups 0-19(("
+intervention,n_animals,average herd size,247,normal,182,,see mannual,
