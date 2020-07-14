@@ -19,9 +19,9 @@ ui <- fluidPage(
         tags$style(HTML("hr {border-top: 1px solid #000000;}"))
     ),
     
-    titlePanel("The Animal- & Human- Health MicoEconomic Evaluation Tool: Antibiotic Resistance-Related Intervention - DRAFT"),
+    titlePanel("The Agriculture-Human-Health MicroEconomic Evaluation Tool for Antibiotic Resistance-Related Interventions - DRAFT"),
     
-    sidebarPanel(h3("Methodolgy Inputs"),
+    sidebarPanel(h3("Methodology Inputs"),
                  
                  ## Willingness to Pay
                  numericInput("wtp", em("Willingness-to-Pay per QALY Gained (GBP)"), 20000, min = 0, 
@@ -417,7 +417,7 @@ server <- function(input,output){
         total_results_Ag[2,] <- results_interv_a[1,]
         
         CBR <- incr_benefit_a/incr_cost_a
-        NMB_A <- incr_benefit-incr_cost # per farm in the population
+        NMB_A <- incr_benefit_a-incr_cost_a # per farm in the population
     
         
         NMB_A_all <- NMB_A*n_farms
@@ -433,8 +433,7 @@ server <- function(input,output){
     output$icer <- renderText({paste0("Cost per QALY gained for the Healthcare Sector (GBP) = ", round(model()$icer,2))})
     
     output$CEAanswer <- renderText({
-        if(model()$icer<0) {paste0("The Intervention Dominates")
-        }else if (model()$icer<input$wtp) {paste0("The Intervention is Cost-Effective")
+        if (model()$icer<input$wtp) {paste0("The Intervention is Cost-Effective")
     }else {paste0("The Intervention is not Cost-Effective")}
         })
     

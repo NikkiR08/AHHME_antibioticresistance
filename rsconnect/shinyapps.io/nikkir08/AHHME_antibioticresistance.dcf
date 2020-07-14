@@ -1,0 +1,12 @@
+name: AHHME_antibioticresistance
+title: AHHME_antibioticresistance
+username:
+account: nikkir08
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2567424
+bundleId: 3389326
+url: https://nikkir08.shinyapps.io/AHHME_antibioticresistance/
+when: 1594706608.03311
+asMultiple: FALSE
+asStatic: FALSE

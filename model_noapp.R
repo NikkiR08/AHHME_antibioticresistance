@@ -299,7 +299,7 @@ total_results_Ag[1,] <- results_base_a[1,]
 total_results_Ag[2,] <- results_interv_a[1,]
 
 CBR <- incr_benefit_a/incr_cost_a
-NMB_A <- incr_benefit-incr_cost # per farm in the population
+NMB_A <- incr_benefit_a-incr_cost_a # per farm in the population
 
 NMB_A_all <- NMB_A*intervention[parameter=="n_farms",value]
 
