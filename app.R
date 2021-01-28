@@ -45,7 +45,8 @@ ui <- fluidPage(
                     tabPanel("Variable Inputs: Livestock System", 
                              h4("General Values"),
                              
-                             # Input: Select a file ----
+                             # Input: Select a file ----  ### !!! have not done anything with this but since there were so many 
+                             ## variable parameters eventually wanted to have more a csv type file for the e.g. transition probabilities etc.
                              fileInput("file1", "Choose CSV File",
                                        multiple = TRUE,
                                        accept = c("text/csv",
@@ -92,7 +93,7 @@ ui <- fluidPage(
                              
                              textOutput("NMB_A_all")),
                             
-                    tabPanel("Outputs: Sensitivity Analyses",
+                    tabPanel("Outputs: Sensitivity Analyses", #### !!! CURRENTLY MISSING APP VERSION OF THIS
                              )
                     
         )
@@ -101,6 +102,9 @@ ui <- fluidPage(
 
 ######################################################
 ############# SERVER ###############################################
+
+#### !!! note that this is with an older version of the model
+
 server <- function(input,output){
     
     
