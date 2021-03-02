@@ -1,9 +1,20 @@
-library(shiny)
-library(xlsx)
-library(rsconnect)
-library(tidyr)
-library(data.table)
 
+################## requried libraries
+require(shiny)
+require(shinythemes)
+require(xlsx)
+require(rsconnect)
+require(dplyr)
+require(tidyr)
+require(data.table)
+
+################# required data
+inputs <- read.csv("data/input.csv")
+inputs <- as.data.table(inputs)
+inputs[ , value := as.numeric(as.character(value))]
+human <- inputs[scenario=="human_0" | scenario=="human_1"]
+animal <- inputs[scenario=="animal_0" | scenario=="animal_1"]
+intervention <- inputs[scenario=="intervention"]
 
 # The user interface (ui) object controls the layout and appearance of your app. 
 # The server function contains the instructions that your computer needs to build your app. 
@@ -14,12 +25,13 @@ library(data.table)
 #######################################################################
 ############## USER INTERFACE ########################################
 ui <- fluidPage(  
-    
+    theme = shinythemes::shinytheme("flatly"),
     tags$head(
         tags$style(HTML("hr {border-top: 1px solid #000000;}"))
     ),
     
-    titlePanel("The Agriculture-Human-Health MicroEconomic Evaluation Tool for Antibiotic Resistance-Related Interventions - DRAFT"),
+    
+    titlePanel("Agriculture-Human-Health-MicroEconomic (AHHME) Tool for Antimicrobial Usage Scenarios: A Pilot Test"),
     
     sidebarPanel(h3("Methodology Inputs"),
                  
@@ -28,12 +40,12 @@ ui <- fluidPage(
                               max = 1000000),
                  
                  ## Discount Rate
-                 numericInput("dcr", em("Discount rate (0-1)"), 0.035, min = 0, 
-                              max = 1),
+                 numericInput("dcr", em("Discount rate (0%-10%)"), 3.5, min = 0, 
+                              max = 100),
                  
                  ## Time Horizon
-                 numericInput("nt", em("Time Horizon (Cycle Length)"), 10, min = 3, 
-                              max = 1000),
+                 numericInput("nt", em("Time Horizon (Model Cycle Length, 3-100 cycles)"), 10, min = 1, 
+                              max = 100),
                  
     ),
     
@@ -41,18 +53,16 @@ ui <- fluidPage(
         
         # Output: Tabset w/ plot, summary, and table
         tabsetPanel(type = "tabs", 
-                    
-                    tabPanel("Variable Inputs: Livestock System", 
+                    tabPanel("Inputs: Manual Variation of Selected Paramaters", 
                              h4("General Values"),
-                             
-                             # Input: Select a file ----  ### !!! have not done anything with this but since there were so many 
-                             ## variable parameters eventually wanted to have more a csv type file for the e.g. transition probabilities etc.
-                             fileInput("file1", "Choose CSV File",
-                                       multiple = TRUE,
-                                       accept = c("text/csv",
-                                                  "text/comma-separated-values,text/plain",
-                                                  ".csv")),
-                             
+                             numericInput("r_cost", em("Cost of a Drug Resistant Infection to Healthcare System"), 1600, min = 0, 
+                                          max = 1000000),
+                             numericInput("s_cost", em("Cost of a Drug Susceptible Infection to Healthcare System"), 1200, min = 0, 
+                                          max = 1000000),
+                             numericInput("c_animal", em("Cost of Keeping an Animal to a Farm per Production cycle"), 100, min = 0, 
+                                          max = 1000000),
+                             numericInput("i_animal", em("Income per Animal to a Farm per Production cycle"), 200 , min = 0, 
+                                          max = 1000000),
                              # Horizontal line ----
                              tags$hr(),
        
@@ -92,19 +102,22 @@ ui <- fluidPage(
                              textOutput("NMB_A"),
                              
                              textOutput("NMB_A_all")),
-                            
-                    tabPanel("Outputs: Sensitivity Analyses", #### !!! CURRENTLY MISSING APP VERSION OF THIS 
-                             ## had issues when tried to integrate SA into the app
-                             )
                     
-        )
+                    br(),
+                    h5("Abbreviations: GBP - Great British Pound, QALY - Quality Adjusted Life Years"),
+                    h5("The base year is 2018, with costs and rewards in 2018 Great British Pounds and Quality Adjusted Life Year values, at the national level"),
+                    br(),
+                    strong("This version of the AHHME App was to pilot the skeleton code for (a) a basic microeconomic evaluation model that incorporates impacts of antibiotic usage scenarios and (b) the app, to test functionality and feasibility of such a model in basic form. The results should NOT be taken as robust estimates of impact"),
+                    br(),
+                    code("App & R code by N.R Naylor. For descriptions of  model code and manual see: https://github.com/NikkiR08/AHHME_antibioticresistance"),
+                    code("App last updated March 2021, Model last updated July 2020"),
+                    br(),
+                    strong("This research was funded by, and is a contribution to, the CGIAR Research Program on Agriculture for Nutrition and Health (A4NH). The opinions expressed here belong to the authors, and do not necessarily reflect those of A4NH or CGIAR. The funder was not involved in the study design, execution or write up processes."))           
     ))
 
 
 ######################################################
 ############# SERVER ###############################################
-
-#### !!! note that this is with an older version of the model
 
 server <- function(input,output){
     
@@ -113,13 +126,14 @@ server <- function(input,output){
     xxchange <- reactive({
         paste(input$wtp, input$dcr, input$nt, input$int_cost_per,
               input$u_RH, input$u_RA, 
-              input$n_pop, input$n_animals, input$n_farms) })
+              input$n_pop, input$n_animals, input$n_farms,
+              input$r_cost, input$s_cost, input$c_animal, input$i_animal) })
     
     
     model <- eventReactive(xxchange(), {
          
         wtp <- input$wtp
-        dcr <- input$dcr
+        dcr <- input$dcr/100 ##convert from 10% input to 0.1
         n.t <- input$nt
         
         u_RH <- input$u_RH 
@@ -130,15 +144,10 @@ server <- function(input,output){
         n_animals <- input$n_animals
         n_farms <- input$n_farms
         
-        inputs <- read.csv("data/input.csv")
-        inputs <- as.data.table(inputs)
-        
-        inputs[ , value := as.numeric(as.character(value))]
-        
-        human <- inputs[scenario=="human_0" | scenario=="human_1"]
-        animal <- inputs[scenario=="animal_0" | scenario=="animal_1"]
-        intervention <- inputs[scenario=="intervention"]
-        
+        r_cost <- input$r_cost
+        s_cost <- input$s_cost
+        c_animal <- input$c_animal
+        i_animal <- input$i_animal
         
         ##### functions used across the sectors##########
         f_expvalue <- function(x,y,z){
@@ -213,11 +222,8 @@ server <- function(input,output){
         colnames(m_cost) <- parameter_names
         rownames(m_cost) <- paste("cycle", 0:(n.t-1), sep  =  "")
         
-        
-        c_r <- human[parameter=="r_cost",value]
-        c_s <- human[parameter=="s_cost",value]
-        
-        cost_i <- c(0,c_r,c_s,0)
+    
+        cost_i <- c(0,r_cost,s_cost,0)
         
         ## start at cycle 1 so you do not multiply initial state vector 
         m_cost[2, 1:length(state_names)] <- cost_i
@@ -293,7 +299,7 @@ server <- function(input,output){
                     (m_param_a[i-1,"mort_w"]*m_param_a[i-1,"well"])
                 
                 m_param_a[i,"sold"] <- (m_param_a[i-1,"w_sold"]*m_param_a[i-1,"well"])
-                ## note that theis is the incidence of death due to how we then multiply with income etc.
+                ## note that this is the incidence of death due to how we then multiply with income etc.
                 # if change that should also add in + m_param[i-1,"sold"] 
             }
             return(m_param_a)
@@ -308,8 +314,8 @@ server <- function(input,output){
         
         c_s <- animal[parameter=="s_cost",value]
         c_r <- c_s+(c_s*animal[parameter=="r_cost_impact",value])
-        
-        cost_i_a <- c(0,c_r,c_s,0,0)
+        c_fallen <- animal[parameter=="c_fallen", value]
+        cost_i_a <- c(c_animal,c_r,c_s,c_fallen,0)
         
         ## start at cycle 1 so you do not multiply initial state vector 
         m_cost_a[2, 1:length(state_names_a)] <- cost_i_a
@@ -325,11 +331,7 @@ server <- function(input,output){
         colnames(m_rwd_a) <- parameter_names_a
         rownames(m_rwd_a) <- paste("cycle", 0:(n.t-1), sep  =  "")
         
-        
-        r_w <- animal[parameter=="i_animal",value]
-        r_sold <- animal[parameter=="i_animal",value]
-        
-        rwd_i_a <- c(r_w,0,0,0,r_sold)
+        rwd_i_a <- c(i_animal,0,0,0, i_animal)
         
         ## start at cycle 1 so you do not multiply initial state vector 
         m_rwd_a[2, 1:length(state_names_a)] <- rwd_i_a
@@ -377,8 +379,8 @@ server <- function(input,output){
         
         c_s <- animal[parameter=="s_cost",value]
         c_r <- c_s+(c_s*animal[parameter=="r_cost_impact",value])
-        
-        cost_i_a2 <- c(c_interv,c_r,c_s,0,0)
+        c_intervW <- c_interv + c_animal
+        cost_i_a2 <- c(c_intervW,c_r,c_s,c_fallen,0)
         
         ## start at cycle 1 so you do not multiply initial state vector 
         m_cost_a2[2, 1:length(state_names_a)] <- cost_i_a2
@@ -435,16 +437,16 @@ server <- function(input,output){
     
     output$CEAresults <- renderPrint({model()$total_results_HC})
     
-    output$icer <- renderText({paste0("Cost per QALY gained for the Healthcare Sector (GBP) = ", round(model()$icer,2))})
+    output$icer <- renderText({paste0("Cost per QALY gained from Healthcare Sector Perspective (GBP) = ", round(model()$icer,2))})
     
     output$CEAanswer <- renderText({
-        if (model()$icer<input$wtp) {paste0("The Intervention is Cost-Effective")
-    }else {paste0("The Intervention is not Cost-Effective")}
+        if (model()$icer<input$wtp) {paste0("The Intervention is Cost-Effective from the Healthcare System Perspective")
+    }else {paste0("The Intervention is not Cost-Effective from the Healthcare System Perspective")}
         })
     
     output$CBAresults <- renderPrint({model()$total_results_Ag})
     
-    output$CBA <- renderText({paste0("Cost:Benefit Ratio at the farm-level (GBP) = ", "1:",round(model()$CBR,2))})
+    output$CBA <- renderText({paste0("Cost:Benefit Ratio from the Farm-Level Perspective (GBP) = ", "1:",round(model()$CBR,2))})
     
     output$NMB_H <- renderText({paste0("Net Monetary Benefit to Healthcare Sector (GBP) = ",round(model()$NMB_H,0))})
     
