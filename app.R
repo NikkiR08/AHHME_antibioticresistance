@@ -106,6 +106,7 @@ ui <- fluidPage(
                     br(),
                     h5("Abbreviations: GBP - Great British Pound, QALY - Quality Adjusted Life Years"),
                     h5("The base year is 2018, with costs and rewards in 2018 Great British Pounds and Quality Adjusted Life Year values, at the national level"),
+                    h5("Background data are currently based on dummy parameters (mainly retrieved from English data), these can be altered via the inputs.csv and the model code behind the app. Details of where to find these are given below."),
                     br(),
                     strong("This version of the AHHME App was to pilot the skeleton code for (a) a basic microeconomic evaluation model that incorporates impacts of antibiotic usage scenarios and (b) the app, to test functionality and feasibility of such a model in basic form. The results should NOT be taken as robust estimates of impact"),
                     br(),
