@@ -31,7 +31,7 @@ ui <- fluidPage(
     ),
     
     
-    titlePanel("Agriculture-Human-Health-MicroEconomic (AHHME) Tool for Antimicrobial Usage Scenarios: A Pilot Test"),
+    titlePanel("Agriculture-Human-Health-MicroEconomic (AHHME) Tool for Antimicrobial Usage Scenarios: A Pilot Study"),
     
     sidebarPanel(h3("Methodology Inputs"),
                  
